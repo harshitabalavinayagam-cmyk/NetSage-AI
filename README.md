@@ -94,22 +94,32 @@ Analytics and Learning History
 ## 📂 Project Structure
 
 ```text
-NetSage_AI/
+NetSage-AI/
 │
 ├── app.py
+├── generate_cases.py
 ├── requirements.txt
 ├── README.md
 ├── .gitignore
 │
-├── engine/
-│   └── diagnosis_engine.py
-│
 ├── data/
 │   ├── cases.csv
-│   ├── review_log.csv
-│   └── diagnosis_history.csv
+│   ├── diagnosis_history.csv
+│   └── review_log.csv
 │
-└── screenshots/
+├── docs/
+│   └── responsible_ai.md
+│
+├── engine/
+│   ├── __init__.py
+│   ├── diagnosis_engine.py
+│   └── rule_checker.py
+│
+├── outputs/
+│   └── .gitkeep
+│
+└── prompts/
+    └── diagnose_prompt.md
 ```
 
 ---
@@ -180,24 +190,6 @@ NetSage AI does not automatically modify network configurations.
 All recommendations should be reviewed by a qualified human before applying changes to a production network.
 
 The system is designed as a decision-support and troubleshooting assistant.
-
----
-
-## 📸 Screenshots
-
-Add screenshots here after capturing them.
-
-Example:
-
-```markdown
-![NetSage AI Home](screenshots/home.png)
-
-![Diagnosis Result](screenshots/diagnosis.png)
-
-![Risk and Health](screenshots/risk_health.png)
-
-![Explainable AI](screenshots/explainable_ai.png)
-```
 
 ---
 
