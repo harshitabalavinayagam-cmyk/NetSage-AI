@@ -1,0 +1,167 @@
+case_id,symptom,topology_note,show_output,expected_fault,osi_layer,concept,severity
+VLAN-001,PC1 cannot communicate with PC2 although both are expected to be in VLAN 20.,PC1 connected to Switch1 Fa0/5 and PC2 connected to Switch1 Fa0/6.,"Switch# show interfaces fa0/5 switchport
+Administrative Mode: static access
+Operational Mode: static access
+Access Mode VLAN: 10
+
+Switch# show vlan brief
+10 SALES active Fa0/5
+20 HR active Fa0/6",PC1 is assigned to VLAN 10 instead of VLAN 20.,Layer 2,VLAN,Medium
+VLAN-002,Devices in VLAN 30 on two switches cannot communicate.,Switch1 and Switch2 are connected through a trunk link.,"Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Fa0/24      on           802.1q         trunking      1
+
+Vlans allowed on trunk
+10,20
+
+Switch# show vlan brief
+30 ENGINEERING active",VLAN 30 is not allowed on the trunk.,Layer 2,VLAN,High
+VLAN-003,PC connected to Fa0/10 cannot access the department network.,PC should belong to VLAN 40.,"Switch# show vlan brief
+10 SALES active
+20 HR active
+30 ENGINEERING active
+
+Switch# show interfaces fa0/10 switchport
+Access Mode VLAN: 1",VLAN 40 is missing and the port remains in VLAN 1.,Layer 2,VLAN,High
+VLAN-004,Users in VLAN 50 cannot communicate across switches.,VLAN 50 should pass through the trunk.,"Switch# show interfaces trunk
+Vlans allowed on trunk
+10,20,30,40
+
+Switch# show vlan brief
+50 GUEST active",VLAN 50 is not allowed on the trunk.,Layer 2,VLAN,Medium
+GW-001,PC can communicate with devices in the same network but cannot reach other networks.,PC address is 192.168.10.20/24.,"PC> ipconfig
+
+IP Address: 192.168.10.20
+Subnet Mask: 255.255.255.0
+Default Gateway: 192.168.1.1",Default gateway is configured for the wrong network.,Layer 3,Gateway,High
+GW-002,PC cannot reach its default gateway.,Router interface should be 10.0.0.1.,"PC> ipconfig
+IP Address: 10.0.0.10
+Subnet Mask: 255.255.255.0
+Default Gateway: 10.0.0.254
+
+Router# show ip interface brief
+GigabitEthernet0/0 10.0.0.1 up up",PC default gateway does not match the router interface.,Layer 3,Gateway,High
+GW-003,Multiple PCs cannot access external networks.,All PCs are in 172.16.5.0/24.,"PC> ipconfig
+IP Address: 172.16.5.20
+Subnet Mask: 255.255.255.0
+Default Gateway: 172.16.6.1",Gateway belongs to a different subnet.,Layer 3,Gateway,High
+DHCP-001,Client receives an APIPA address instead of a valid network address.,Client should receive an address from 192.168.20.0/24.,"PC> ipconfig
+IP Address: 169.254.10.15
+
+Router# show ip dhcp pool
+Pool OFFICE
+Network 192.168.20.0 /24
+Leased addresses: 0",DHCP allocation is failing; client is not receiving a valid lease.,Layer 7,DHCP,High
+DHCP-002,New clients cannot obtain IP addresses.,Existing clients already occupy most addresses.,"Router# show ip dhcp pool
+Pool LAB
+Network 192.168.30.0 /24
+Total addresses: 10
+Leased addresses: 10
+Available addresses: 0",DHCP pool is exhausted.,Layer 7,DHCP,High
+DHCP-003,Client receives an IP address from the wrong network.,Client belongs to VLAN 40 and should receive 192.168.40.0/24.,"Router# show ip dhcp pool
+Pool VLAN40
+Network 192.168.50.0 /24
+
+PC> ipconfig
+IP Address: 192.168.50.12",DHCP pool network does not match the client VLAN.,Layer 7,DHCP,Medium
+DHCP-004,Remote subnet clients cannot obtain DHCP addresses.,DHCP server is on another network.,"Router# show running-config interface g0/1
+interface GigabitEthernet0/1
+ ip address 192.168.60.1 255.255.255.0
+
+Router# show ip dhcp relay
+No helper address configured",DHCP relay or ip helper-address is missing.,Layer 3/7,DHCP,High
+DNS-001,Users can ping 8.8.8.8 but cannot access www.example.com.,Internet connectivity is working.,"PC> ipconfig
+IP Address: 192.168.1.10
+Default Gateway: 192.168.1.1
+DNS Server: 0.0.0.0",DNS server is not configured.,Layer 7,DNS,Medium
+DNS-002,Internal website hostname cannot be resolved.,DNS server should be 10.10.10.5.,"PC> ipconfig
+DNS Server: 10.10.10.50
+
+PC> nslookup intranet.local
+Server: 10.10.10.50
+Request timed out",Incorrect DNS server address is configured.,Layer 7,DNS,Medium
+DNS-003,Only one hostname cannot be resolved while other names work.,DNS server is reachable.,"PC> nslookup server.company.local
+*** server.company.local not found
+
+PC> nslookup portal.company.local
+Name: portal.company.local
+Address: 192.168.100.10",DNS record for server.company.local is missing.,Layer 7,DNS,Low
+ROUTE-001,Network 192.168.30.0 cannot reach network 192.168.40.0.,Two routers connect the networks.,"Router# show ip route
+C 192.168.30.0/24 is directly connected
+C 10.0.0.0/30 is directly connected
+
+No route to 192.168.40.0/24",Static or dynamic route to 192.168.40.0/24 is missing.,Layer 3,Routing,High
+ROUTE-002,Packets cannot reach a remote branch network.,Static route uses next hop 10.1.1.2.,"Router# show running-config
+ip route 192.168.70.0 255.255.255.0 10.1.1.2
+
+Router# ping 10.1.1.2
+.....
+Success rate is 0 percent",Configured next hop is unreachable.,Layer 3,Routing,High
+ROUTE-003,Branch network intermittently loses connectivity.,Routing protocol is expected to advertise all LAN networks.,"Router# show ip route
+O 192.168.80.0/24 [110/2]
+C 192.168.90.0/24 is directly connected
+
+Router# show ip ospf neighbor
+Neighbor ID: 2.2.2.2 FULL",Required network is not being advertised into OSPF.,Layer 3,Routing,Medium
+ROUTE-004,Router forwards traffic to an incorrect network path.,Destination should be reached through 172.20.1.2.,"Router# show ip route 192.168.100.0
+S 192.168.100.0/24 [1/0] via 172.20.1.3",Static route uses the wrong next-hop address.,Layer 3,Routing,High
+ROUTE-005,Remote traffic is sent to the wrong router.,Default route should point to 192.0.2.1.,"Router# show ip route
+Gateway of last resort is 192.0.2.254
+
+S* 0.0.0.0/0 via 192.0.2.254",Default route points to the wrong gateway.,Layer 3,Routing,High
+ACL-001,Users can ping the web server but cannot open its HTTP service.,Web server address is 192.168.100.10.,"Router# show access-lists
+Extended IP access list WEB-FILTER
+10 deny tcp any host 192.168.100.10 eq 80
+20 permit ip any any",ACL explicitly blocks HTTP traffic to the web server.,Layer 3/4,ACL,High
+ACL-002,A department cannot access an internal application.,Traffic originates from 10.20.0.0/16.,"Router# show access-lists
+Standard IP access list 10
+10 deny 10.20.0.0 0.0.255.255
+20 permit any",ACL denies traffic from the department subnet.,Layer 3,ACL,High
+ACL-003,SSH access to the router fails from the management PC.,Management PC address is 192.168.200.50.,"Router# show running-config | section line vty
+line vty 0 4
+ access-class 50 in
+
+Router# show access-lists 50
+10 permit 192.168.200.60
+20 deny any",Management PC is not permitted by the VTY ACL.,Layer 3/7,ACL,Medium
+ACL-004,Guest users cannot access the internet.,Guest VLAN is 192.168.150.0/24.,"Router# show access-lists
+Extended IP access list GUEST
+10 deny ip 192.168.150.0 0.0.0.255 any
+20 permit ip any any",ACL denies all guest VLAN traffic.,Layer 3,ACL,High
+NAT-001,Internal users cannot access the internet.,Inside network is 192.168.10.0/24.,"Router# show ip nat translations
+No entries found
+
+Router# show running-config | include ip nat
+ip nat inside source list 1 interface GigabitEthernet0/1 overload
+
+Router# show ip interface brief
+GigabitEthernet0/0 192.168.10.1 up up
+GigabitEthernet0/1 203.0.113.2 up up",NAT inside/outside interface configuration is missing.,Layer 3,NAT,High
+NAT-002,Only some internal devices can access the internet.,NAT ACL should include 192.168.20.0/24.,"Router# show access-lists 1
+Standard IP access list 1
+10 permit 192.168.10.0 0.0.0.255
+
+Router# show ip nat translations
+No translation for 192.168.20.25",NAT access list does not include 192.168.20.0/24.,Layer 3,NAT,Medium
+NAT-003,Internal network can ping the router but cannot reach public addresses.,Outside interface should connect to ISP.,"Router# show ip interface brief
+GigabitEthernet0/0 192.168.30.1 up up
+GigabitEthernet0/1 unassigned administratively down down",NAT outside interface is administratively down.,Layer 1/3,NAT,High
+WIFI-001,Wireless clients cannot connect to the corporate Wi-Fi.,SSID should be CorpNet.,"AccessPoint# show wireless summary
+SSID: Corp_Net
+Status: Enabled",Configured SSID does not match the expected SSID.,Layer 2,Wireless,Medium
+WIFI-002,Wireless clients connect but receive no IP address.,Wireless clients should use VLAN 60.,"AccessPoint# show vlan
+SSID GuestWiFi VLAN 60
+
+Router# show ip dhcp pool
+Pool VLAN50
+Network 192.168.50.0 /24",DHCP pool does not match the wireless VLAN.,Layer 2/7,Wireless,High
+WIFI-003,Guest Wi-Fi users can access internal company servers.,Guest network must be isolated from internal network.,"Router# show access-lists
+Extended IP access list GUEST-OUT
+10 permit ip 192.168.70.0 0.0.0.255 any",Guest isolation ACL is missing; guest traffic is allowed to all networks.,Layer 3/4,Wireless,Critical
+WIFI-004,Wireless clients repeatedly disconnect.,Access point should operate on a non-overlapping channel.,"AccessPoint# show wireless channel
+Channel: 6
+
+Nearby APs:
+AP1 Channel 6
+AP2 Channel 6
+AP3 Channel 6",Severe co-channel interference affects wireless stability.,Layer 1,Wireless,Medium

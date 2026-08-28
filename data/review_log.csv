@@ -1,0 +1,6 @@
+case_id,predicted_root_cause,confidence,review,comments
+VLAN-001,PC1 is assigned to VLAN 10 instead of VLAN 20.,55,✅ Correct,The diagnosis correctly identified the VLAN assignment issue.
+VLAN-001,PC1 is assigned to VLAN 10 instead of VLAN 20.,55,✅ Correct,Diagnosis verified successfully.
+DHCP-002,PC1 is assigned to VLAN 10 instead of VLAN 20.,55,🔎 Needs Investigation,Diagnosis verified successfully.
+NAT-001,PC1 is assigned to VLAN 10 instead of VLAN 20.,55,❌ Incorrect,Diagnosis verified successfully.
+CUSTOM-CASE,Unable to determine root cause.,55,✅ Correct,
